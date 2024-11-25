@@ -18,7 +18,7 @@ class ESRPIntegration(Integration):
         self.user_agent = user_agent
         self.url = "https://ck964.ersp.biz/index.cfm"
 
-    async def initialize(self, network_requester: NetworkRequester=None):
+    async def initialize(self, network_requester: NetworkRequester = None):
         self.network_requester = network_requester
 
     async def _make_request(self, method: str, url: str, **kwargs) -> str:
@@ -216,10 +216,8 @@ class ESRPIntegration(Integration):
         soup = BeautifulSoup(response, "html.parser")
         report_table_element = soup.select_one("table.functionLayout")
 
-        report_data = self._parse_table_rows_to_list(report_table_element)
-        return {
-            "comfort_keepers_list": report_data,
-        }
+        comfort_keepers_list = self._parse_table_rows_to_list(report_table_element)
+        return comfort_keepers_list
 
     async def fetch_activity_report(self, cookies: dict = None):
         date_today, date_monday = self._get_date_and_week_start()
@@ -280,15 +278,13 @@ class ESRPIntegration(Integration):
         report_tables = soup.select("table.functionLayout")
         for table in report_tables:
             first_row = table.select_one("tr")
-            this_title = first_row.text.strip()     # the first row has the name of the comfort keeper, 2nd row is headers
+            this_title = first_row.text.strip()  # the first row has the name of the comfort keeper, 2nd row is headers
             table.select_one("tr").decompose()
 
             table_data = self._parse_table_rows_to_list(table)
             report_tables_processed.append({this_title: table_data})
 
-        return {
-            "activity_report": report_tables_processed,
-        }
+        return report_tables_processed
 
     async def fetch_calls_clocks_log(self, cookies: dict = None):
         date_today, date_monday = self._get_date_and_week_start()
@@ -315,8 +311,6 @@ class ESRPIntegration(Integration):
 
         soup = BeautifulSoup(response, "html.parser")
         unparsed_table = soup.select_one("table#callLogListing")
-        parsed_table = self._parse_table_rows_to_list(unparsed_table)
+        calls_clocks_log_report = self._parse_table_rows_to_list(unparsed_table)
 
-        return {
-            "calls_clocks_log": parsed_table,
-        }
+        return calls_clocks_log_report
