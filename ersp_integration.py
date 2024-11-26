@@ -11,7 +11,7 @@ from submodule_integrations.models.integration import Integration
 from submodule_integrations.utils.errors import IntegrationAuthError, IntegrationAPIError
 
 
-class ESRPIntegration(Integration):
+class ERSPIntegration(Integration):
     def __init__(self, user_agent: str = UserAgent().random):
         super().__init__("esrp")
         self.network_requester = None
