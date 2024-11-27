@@ -1,24 +1,22 @@
 import aiohttp
-import certifi
-from typing import Dict, Any
+from typing import Any
 from bs4.element import Tag
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from datetime import date, timedelta, datetime
 
-from helpers.classes.network_requester import NetworkRequester
 from submodule_integrations.models.integration import Integration
 from submodule_integrations.utils.errors import IntegrationAuthError, IntegrationAPIError
 
 
-class ESRPIntegration(Integration):
+class ErspIntegration(Integration):
     def __init__(self, user_agent: str = UserAgent().random):
-        super().__init__("esrp")
+        super().__init__("ersp")
         self.network_requester = None
         self.user_agent = user_agent
         self.url = "https://ck964.ersp.biz/index.cfm"
 
-    async def initialize(self, network_requester: NetworkRequester = None):
+    async def initialize(self, network_requester = None):
         self.network_requester = network_requester
 
     async def _make_request(self, method: str, url: str, **kwargs) -> str:
@@ -38,6 +36,14 @@ class ESRPIntegration(Integration):
 
     async def _handle_response(self, response: aiohttp.ClientResponse) -> [str | Any]:
         if response.status == 200:
+            # site returns 200 even when session expired so check response text
+            r_text = await response.text()
+            if '<div class="login-main" ng-app="loginApp" ng-cloak>' in r_text\
+                    or "loginApp" in r_text:
+                raise IntegrationAuthError(
+                    f"ERSP Authentication failed for {response.url}"
+                )
+
             return await response.text()
 
         status_code = response.status
@@ -46,7 +52,7 @@ class ESRPIntegration(Integration):
             # potential auth caused
             reason = response.reason
             raise IntegrationAuthError(
-                f"ESRP: {status_code} - {reason} \n{await response.text()}"
+                f"ERSP: {status_code} - {reason} \n{await response.text()}"
             )
         elif status_code == 302:
             # should rarely happen as redirects should be automatic
@@ -57,7 +63,7 @@ class ESRPIntegration(Integration):
         else:
             raise IntegrationAPIError(
                 self.integration_name,
-                f"ESRP: {status_code} - {response.headers}",
+                f"ersp: {status_code} - {response.headers}",
                 status_code,
             )
 
