@@ -176,7 +176,7 @@ class ErspIntegration(Integration):
 
         return rows
 
-    async def fetch_comfort_keepers_report(self, cookies: dict = None):
+    async def fetch_workers_report(self, cookies: dict = None):
         date_today = self._get_date_and_week_start()[0]
         params = {
             'event': 'admin.reports.resource.resourceData.viewResourceData',
@@ -222,8 +222,8 @@ class ErspIntegration(Integration):
         soup = BeautifulSoup(response, "html.parser")
         report_table_element = soup.select_one("table.functionLayout")
 
-        comfort_keepers_list = self._parse_table_rows_to_list(report_table_element)
-        return comfort_keepers_list
+        workers_list = self._parse_table_rows_to_list(report_table_element)
+        return workers_list
 
     async def fetch_activity_report(self, cookies: dict = None):
         date_today, date_monday = self._get_date_and_week_start()
